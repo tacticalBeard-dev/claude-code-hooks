@@ -415,5 +415,5 @@ MIT License - see LICENSE file for details
 
 ## Resources
 
-- [Claude Code Documentation](https://docs.claude.com/claude-code)
-- [Claude Code Hooks Guide](https://docs.claude.com/claude-code/hooks)
+- [Claude Code Documentation](https://docs.claude.com/en/docs/claude-code/overview)
+- [Claude Code Hooks Guide](https://docs.claude.com/en/docs/claude-code/hooks)
