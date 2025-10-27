@@ -1,0 +1,33 @@
+{
+  "$schema": "./bash-validator-config.schema.json",
+  "blockedDirs": [
+    "node_modules",
+    "dist",
+    "build",
+    "\\.git/",
+    "\\.chrome",
+    "\\.vscode",
+    "\\.idea",
+    "coverage",
+    "\\.next",
+    "out",
+    "target",
+    "bin",
+    "obj",
+    "vendor",
+    "__pycache__",
+    "\\.pytest_cache",
+    "venv",
+    "env"
+  ],
+  "allowedCommands": [
+    "git status",
+    "git log",
+    "git branch",
+    "git diff",
+    "npm --version",
+    "node --version"
+  ],
+  "strictMode": false,
+  "verbose": false
+}

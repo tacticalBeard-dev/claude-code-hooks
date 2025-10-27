@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bash Validator Configuration",
+  "description": "Configuration for Claude Code bash command validation hook",
+  "type": "object",
+  "properties": {
+    "blockedDirs": {
+      "description": "List of directory patterns to block (regex patterns)",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "node_modules",
+        "dist",
+        "build",
+        "\\.git/",
+        "\\.vscode",
+        "\\.idea"
+      ]
+    },
+    "allowedCommands": {
+      "description": "List of commands that are always allowed (regex patterns)",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "git status",
+        "git log"
+      ]
+    },
+    "strictMode": {
+      "description": "Enable strict mode to block potentially destructive commands",
+      "type": "boolean",
+      "default": false
+    },
+    "verbose": {
+      "description": "Enable verbose logging for debugging",
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

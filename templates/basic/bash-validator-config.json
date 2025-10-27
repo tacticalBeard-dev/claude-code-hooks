@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tacticalBeard-dev/claude-code-hooks/main/hooks/bash-validator/bash-validator-config.schema.json",
+  "blockedDirs": [
+    "node_modules",
+    "dist",
+    "build",
+    "\\.git/"
+  ],
+  "allowedCommands": [
+    "git status",
+    "git log",
+    "git branch",
+    "git diff"
+  ],
+  "strictMode": false,
+  "verbose": false
+}
