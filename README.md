@@ -57,7 +57,7 @@ Prevents Claude Code from running commands on protected directories.
      https://raw.githubusercontent.com/tacticalBeard-dev/claude-code-hooks/main/templates/basic/settings.local.json
    ```
 
-5. **Customize the configuration** (optional)
+5. **Customize the configuration** (see Customization section below)
 
 ### Manual Installation
 
@@ -98,35 +98,171 @@ Edit `.claude/scripts/bash-validator-config.json`:
 - **strictMode** (boolean): Block potentially destructive commands
 - **verbose** (boolean): Enable detailed logging
 
+## Customization Guide
+
+### Adding Directories to Block
+
+To add more directories to ignore, edit `.claude/scripts/bash-validator-config.json`:
+
+1. **Open the config file** in your project:
+   ```bash
+   # Edit .claude/scripts/bash-validator-config.json
+   ```
+
+2. **Add directory patterns to the blockedDirs array:**
+   ```json
+   {
+     "blockedDirs": [
+       "node_modules",
+       "dist",
+       "\\\\.git/",
+       "your-new-directory",
+       "another-folder"
+     ]
+   }
+   ```
+
+3. **Save the file** - changes take effect immediately
+
+### Regex Pattern Examples
+
+Since `blockedDirs` uses regex patterns, remember to escape special characters:
+
+| Directory | Pattern | Notes |
+|-----------|---------|-------|
+| `node_modules` | `"node_modules"` | Simple directory name |
+| `.git/` | `"\\\\.git/"` | Escape dots (4 backslashes in JSON) |
+| `dist` or `build` | `"(dist\\|build)"` | Multiple options |
+| Any `.cache` folder | `"\\\\.cache"` | Matches `.cache` anywhere |
+| `temp*` folders | `"temp.*"` | Wildcard matching |
+| Exact `.vscode` only | `"^\\\\.vscode$"` | Anchored match |
+
+**Why 4 backslashes?**
+- JSON requires `\\` to represent one backslash
+- Regex requires `\` before special chars like `.`
+- So `\\.` becomes `\\\\.` in JSON
+
+### Adding Allowed Commands
+
+To whitelist commands that should bypass blocking:
+
+```json
+{
+  "allowedCommands": [
+    "git status",
+    "git log",
+    "git branch",
+    "npm --version",
+    "du -sh node_modules"
+  ]
+}
+```
+
+Commands matching these patterns will always be allowed, even if they target blocked directories.
+
 ### Project-Specific Examples
 
 **JavaScript/TypeScript:**
 ```json
 {
-  "blockedDirs": ["node_modules", "dist", "build", "\\\\.git/", "coverage", "\\\\.next"]
+  "blockedDirs": [
+    "node_modules",
+    "dist",
+    "build",
+    "\\\\.git/",
+    "coverage",
+    "\\\\.next",
+    "out",
+    "\\\\.nuxt",
+    "\\\\.output"
+  ]
 }
 ```
 
 **Python:**
 ```json
 {
-  "blockedDirs": ["venv", "env", "__pycache__", "\\\\.pytest_cache", "\\\\.git/"]
+  "blockedDirs": [
+    "venv",
+    "env",
+    "\\\\.venv",
+    "__pycache__",
+    "\\\\.pytest_cache",
+    "\\\\.git/",
+    "dist",
+    "build",
+    "\\\\.tox",
+    "eggs",
+    "\\\\.eggs"
+  ]
 }
 ```
 
 **Rust:**
 ```json
 {
-  "blockedDirs": ["target", "\\\\.git/", "vendor"]
+  "blockedDirs": [
+    "target",
+    "\\\\.git/",
+    "vendor",
+    "\\\\.cargo"
+  ]
 }
 ```
 
 **.NET:**
 ```json
 {
-  "blockedDirs": ["bin", "obj", "packages", "\\\\.git/", "\\\\.vs"]
+  "blockedDirs": [
+    "bin",
+    "obj",
+    "packages",
+    "\\\\.git/",
+    "\\\\.vs",
+    "TestResults",
+    "\\\\.nuget"
+  ]
 }
 ```
+
+**Go:**
+```json
+{
+  "blockedDirs": [
+    "vendor",
+    "\\\\.git/",
+    "bin"
+  ]
+}
+```
+
+### Adding New Hook Types
+
+To contribute additional hook types to this repository:
+
+1. **Create hook directory:**
+   ```bash
+   mkdir -p hooks/your-hook-name
+   ```
+
+2. **Add your hook script(s):**
+   ```
+   hooks/your-hook-name/
+   ├── your-script.ps1 (or .sh for bash)
+   ├── config.json (optional)
+   └── config.schema.json (optional)
+   ```
+
+3. **Create template:**
+   ```
+   templates/your-hook-name/
+   ├── settings.local.json
+   └── config.json
+   ```
+
+4. **Update README** with usage instructions
+
+5. **Submit pull request**
 
 ## How It Works
 
@@ -179,7 +315,8 @@ Whitelist specific commands:
 {
   "allowedCommands": [
     "git status",
-    "npm list --depth=0"
+    "npm list --depth=0",
+    "du -sh node_modules"
   ]
 }
 ```
@@ -190,9 +327,9 @@ Create different configs per environment:
 
 ```
 .claude/scripts/
-├── bash-validator-config.json
-├── bash-validator-config.dev.json
-└── bash-validator-config.strict.json
+├── bash-validator-config.json          # Default
+├── bash-validator-config.dev.json      # Development
+└── bash-validator-config.strict.json   # CI/Production
 ```
 
 Reference specific config in `settings.local.json`:
@@ -211,6 +348,25 @@ Reference specific config in `settings.local.json`:
 }
 ```
 
+### Testing Your Regex Patterns
+
+To test if a pattern matches correctly:
+
+1. Enable verbose mode:
+   ```json
+   { "verbose": true }
+   ```
+
+2. Try commands and watch the output
+3. Adjust patterns as needed
+4. Disable verbose when satisfied
+
+**Pattern Tips:**
+- Start simple: `"node_modules"` works for most cases
+- Add anchors only if needed: `"^dist$"` for exact match
+- Escape dots: `"\\\\.git/"` for `.git/`
+- Test with both blocked and allowed commands
+
 ## Troubleshooting
 
 ### Hook Not Running
@@ -224,14 +380,23 @@ Reference specific config in `settings.local.json`:
 
 1. Check regex patterns in `blockedDirs`
 2. Escape special regex characters (e.g., `\\\\.git/`)
-3. Enable verbose mode
-4. Verify hook is running
+3. Enable verbose mode to see pattern matching
+4. Verify hook is running (see above)
 
 ### Commands Incorrectly Blocked
 
 1. Add command pattern to `allowedCommands`
 2. Adjust `blockedDirs` patterns to be more specific
-3. Use verbose mode to debug
+3. Use verbose mode to see why it's blocked
+4. Check for false positives in patterns
+
+### Pattern Not Matching
+
+Common issues:
+- Forgot to escape dots: Use `\\\\.git/` not `.git/`
+- Too many/few backslashes: JSON needs 4 for regex dot
+- Pattern too broad: `".*dist.*"` matches "distributed"
+- Pattern too narrow: `"^dist$"` won't match `dist/`
 
 ## Contributing
 
